@@ -72,9 +72,9 @@ public class QuoteServiceTest {
         verify(quoteWriter).write(arg.capture());
         Quote generatedQuote = arg.getValue();
         assertEquals(loanAmount, generatedQuote.getRequestedAmount());
-        assertEquals(0.08252D, generatedQuote.getRate(), 0.001D);
-        assertEquals(30.88D, generatedQuote.getMonthlyRepayment(), 0.001D);
-        assertEquals(1111.59D, generatedQuote.getTotalRepayment(), 0.001D);
+        assertEquals(0.070D, generatedQuote.getRate(), 0.001D);
+        assertEquals(30.88D, generatedQuote.getMonthlyRepayment(), 0.01D);
+        assertEquals(1111.59D, generatedQuote.getTotalRepayment(), 0.01D);
 
     }
 
@@ -101,8 +101,8 @@ public class QuoteServiceTest {
         Quote generatedQuote = arg.getValue();
         assertEquals(loanAmount, generatedQuote.getRequestedAmount());
         assertEquals(0.067D, generatedQuote.getRate(), 0.001D);
-        assertEquals(61.48D, generatedQuote.getMonthlyRepayment(), 0.001D);
-        assertEquals(2213.32D, generatedQuote.getTotalRepayment(), 0.001D);
+        assertEquals(61.48D, generatedQuote.getMonthlyRepayment(), 0.01D);
+        assertEquals(2213.32D, generatedQuote.getTotalRepayment(), 0.01D);
 
     }
 

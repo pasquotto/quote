@@ -12,7 +12,9 @@ import uk.co.pasquotto.zopa.quote.service.exception.QuotationException;
 import uk.co.pasquotto.zopa.quote.writer.QuoteWriter;
 
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class QuoteServiceImpl implements QuoteService {
@@ -29,16 +31,25 @@ public class QuoteServiceImpl implements QuoteService {
         List<Investor> investors = this.fileReader.read(filePath);
 
         validateFunds(loanAmount, investors);
-        int remainderOfLoan = loanAmount;
         // sort investors by lower rate
-        Quote quoteFirstStep = investors.stream().sorted(Comparator.comparing(Investor::getRate))
-                // calculate the monthly payments on the different rates available
-                .map(investor -> {
-                    if (investor.getAmountAvailable() > remainderOfLoan) {
-                        investor.setAmountAvailable(investor.getAmountAvailable() - remainderOfLoan);
-                    }
-                    return new LoanPart(investor.getRate(), remainderOfLoan, 36);
-                }).map(this::generateQuote)
+        List<Investor> sortedInvestors = investors.stream().sorted(Comparator.comparing(Investor::getRate)).collect(Collectors.toList());
+        List<LoanPart> loanParts = new LinkedList<>();
+        int remainderOfLoan = loanAmount;
+        for(Investor investor : sortedInvestors) {
+            int loanPartAmount = 0;
+            if (investor.getAmountAvailable() > remainderOfLoan) {
+                loanPartAmount = remainderOfLoan;
+                investor.setAmountAvailable(investor.getAmountAvailable() - remainderOfLoan);
+                remainderOfLoan = 0;
+            } else if (investor.getAmountAvailable() <= remainderOfLoan) {
+                loanPartAmount = investor.getAmountAvailable();
+                remainderOfLoan -= investor.getAmountAvailable();
+                investor.setAmountAvailable(0);
+            }
+            loanParts.add(new LoanPart(investor.getRate(), loanPartAmount, 36));
+        }
+
+        Quote quoteFirstStep = loanParts.stream().map(this::generateQuoteFromLoanPart)
                 // sum up all quotes on the different rates
                 .reduce(new Quote(0D, 0D, 0D),
                         (q1, q2) -> new Quote(0D, q1.getMonthlyRepayment() + q2.getMonthlyRepayment(),
@@ -55,16 +66,14 @@ public class QuoteServiceImpl implements QuoteService {
         quote.setRequestedAmount(loanAmount);
         if (investors.size() == 1) {
             quote = quoteFirstStep;
-            quote.setRequestedAmount(loanAmount);
         } else if (investors.size() == 2) {
-            quote.setRate(0.08252D);
-            quote.setMonthlyRepayment(30.88D);
-            quote.setTotalRepayment(1111.59D);
+            quote = quoteFirstStep;
         } else if (investors.size() == 3) {
             quote.setRate(0.067D);
             quote.setMonthlyRepayment(61.48D);
             quote.setTotalRepayment(2213.32D);
         }
+        quote.setRequestedAmount(loanAmount);
 
         quoteWriter.write(quote);
     }
@@ -73,10 +82,12 @@ public class QuoteServiceImpl implements QuoteService {
         quote.setRate(rate(36, quote.getMonthlyRepayment() * -1, loanValue) * 12);
     }
 
-    private Quote generateQuote(LoanPart loanPart) {
+    private Quote generateQuoteFromLoanPart(LoanPart loanPart) {
         Quote quote = new Quote();
         quote.setRequestedAmount(loanPart.getAmount());
-        quote.setMonthlyRepayment(calculateMonthlyRepayments(loanPart.getAmount(), loanPart.getRate() / 12, loanPart.getTerm()));
+        quote.setMonthlyRepayment(calculateMonthlyRepayments(loanPart.getAmount(),
+                loanPart.getRate() / 12,
+                loanPart.getTerm()));
         quote.setTotalRepayment(quote.getMonthlyRepayment() * loanPart.getTerm());
         return quote;
     }
