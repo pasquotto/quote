@@ -1,4 +1,4 @@
-package uk.co.pasquotto.zopa.quote;
+package uk.co.pasquotto.zopa.quote.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
