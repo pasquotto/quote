@@ -8,11 +8,13 @@ public class Quote implements Serializable {
     private Double rate;
     private Double monthlyRepayment;
     private Double totalRepayment;
+    private int term;
 
-    public Quote(double monthlyRepayment, double totalRepayment) {
+    public Quote(double monthlyRepayment, double totalRepayment, int term) {
         this.rate = 0D;
         this.monthlyRepayment = monthlyRepayment;
         this.totalRepayment = totalRepayment;
+        this.term = term;
     }
 
     public Quote() {
@@ -77,5 +79,13 @@ public class Quote implements Serializable {
                 ", monthlyRepayment=" + monthlyRepayment +
                 ", totalRepayment=" + totalRepayment +
                 '}';
+    }
+
+    public void setTerm(int term) {
+        this.term = term;
+    }
+
+    public int getTerm() {
+        return term;
     }
 }

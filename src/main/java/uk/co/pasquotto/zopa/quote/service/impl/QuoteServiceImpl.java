@@ -1,6 +1,7 @@
 package uk.co.pasquotto.zopa.quote.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.co.pasquotto.zopa.quote.model.Investor;
 import uk.co.pasquotto.zopa.quote.model.LoanPart;
@@ -28,6 +29,18 @@ public class QuoteServiceImpl implements QuoteService {
     @Autowired
     private QuoteWriter quoteWriter;
 
+    @Value("${loan.term:36}")
+    private int term = 36;
+
+    @Value("${loan.maxAllowed:15000")
+    private int loanMaxAllowed = 15000;
+
+    @Value("${loan.minAllowed:1000}")
+    private int loanMinAllowed = 1000;
+
+    @Value("${loan.increment:100")
+    private int loanIncrement = 100;
+
     @Override
     public void quote(String filePath, int loanAmount) {
         this.validateAmount(loanAmount);
@@ -42,9 +55,9 @@ public class QuoteServiceImpl implements QuoteService {
 
         Quote quote = loanParts.stream().map(this::generateQuoteFromLoanPart)
                 // sum up all quotes on the different rates
-                .reduce(new Quote(0D, 0D),
+                .reduce(new Quote(0D, 0D, 0),
                         (q1, q2) -> new Quote(q1.getMonthlyRepayment() + q2.getMonthlyRepayment(),
-                                q1.getTotalRepayment() + q2.getTotalRepayment()));
+                                q1.getTotalRepayment() + q2.getTotalRepayment(), q2.getTerm()));
 
         calculateRate(quote, loanAmount);
 
@@ -74,13 +87,14 @@ public class QuoteServiceImpl implements QuoteService {
                 remainderOfLoan -= investor.getAmountAvailable();
                 investor.setAmountAvailable(0);
             }
-            loanParts.add(new LoanPart(investor.getRate(), loanPartAmount, 36));
+            loanParts.add(new LoanPart(investor.getRate(), loanPartAmount, this.term));
         }
         return loanParts;
     }
 
     private void calculateRate(Quote quote, int loanValue) {
-        quote.setRate(rate(36, quote.getMonthlyRepayment() * -1, loanValue) * 12);
+        double monthlyRate = rate(quote.getTerm(), quote.getMonthlyRepayment() * -1, loanValue);
+        quote.setRate(monthlyRate * 12);
     }
 
     private Quote generateQuoteFromLoanPart(LoanPart loanPart) {
@@ -90,6 +104,7 @@ public class QuoteServiceImpl implements QuoteService {
                 loanPart.getRate() / 12,
                 loanPart.getTerm()));
         quote.setTotalRepayment(quote.getMonthlyRepayment() * loanPart.getTerm());
+        quote.setTerm(loanPart.getTerm());
         return quote;
     }
 
@@ -100,8 +115,10 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     private void validateAmount(int loanAmount) {
-        if (loanAmount < 1000 || loanAmount > 15000) throw new QuotationException("Loan amount is out of range 1000 - 15000");
-        if ((loanAmount % 100) != 0) throw new QuotationException("Loan amount is out of range 1000 - 15000");
+        if (loanAmount < loanMinAllowed || loanAmount > loanMaxAllowed) {
+            throw new QuotationException("Loan amount is out of range " + loanMinAllowed + " - " + loanMaxAllowed);
+        }
+        if ((loanAmount % loanIncrement) != 0) throw new QuotationException("Loan amount is not multiple of " + loanIncrement);
     }
 
 }
