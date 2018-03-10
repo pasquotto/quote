@@ -26,9 +26,7 @@ public class QuoteServiceImpl implements QuoteService {
         this.validateAmount(loanAmount);
         List<Investor> investors = this.fileReader.read(filePath);
 
-        if (investors.stream().mapToDouble(Investor::getAmountAvailable).sum() < loanAmount) {
-            throw new NotEnoughFundsException();
-        }
+        validateFunds(loanAmount, investors);
 
         Quote quote = new Quote();
         quote.setRequestedAmount(loanAmount);
@@ -47,6 +45,12 @@ public class QuoteServiceImpl implements QuoteService {
         }
 
         quoteWriter.write(quote);
+    }
+
+    private void validateFunds(int loanAmount, List<Investor> investors) {
+        if (investors.stream().mapToDouble(Investor::getAmountAvailable).sum() < loanAmount) {
+            throw new NotEnoughFundsException();
+        }
     }
 
     private void validateAmount(int loanAmount) {
