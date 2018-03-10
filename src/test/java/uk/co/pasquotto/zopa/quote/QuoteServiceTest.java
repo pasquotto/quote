@@ -48,8 +48,8 @@ public class QuoteServiceTest {
         Quote generatedQuote = arg.getValue();
         assertEquals(loanAmount, generatedQuote.getRequestedAmount());
         assertEquals(0.075D, generatedQuote.getRate(), 0.001D);
-        assertEquals(31.11D, generatedQuote.getMonthlyRepayment(), 0.001D);
-        assertEquals(1119.82D, generatedQuote.getTotalRepayment(), 0.001D);
+        assertEquals(31.11D, generatedQuote.getMonthlyRepayment(), 0.01D);
+        assertEquals(1119.82D, generatedQuote.getTotalRepayment(), 0.01D);
 
     }
 

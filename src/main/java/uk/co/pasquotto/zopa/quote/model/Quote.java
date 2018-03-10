@@ -8,6 +8,16 @@ public class Quote {
     private Double monthlyRepayment;
     private Double totalRepayment;
 
+    public Quote(double rate, double monthlyRepayment, double totalRepayment) {
+        this.rate = rate;
+        this.monthlyRepayment = monthlyRepayment;
+        this.totalRepayment = totalRepayment;
+    }
+
+    public Quote() {
+
+    }
+
     public int getRequestedAmount() {
         return requestedAmount;
     }

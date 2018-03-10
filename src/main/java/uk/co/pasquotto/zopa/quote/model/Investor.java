@@ -2,7 +2,7 @@ package uk.co.pasquotto.zopa.quote.model;
 
 public class Investor {
     private String name;
-    private double rate;
+    private Double rate;
     private int amountAvailable;
 
     public void setName(String name) {
@@ -13,11 +13,11 @@ public class Investor {
         return name;
     }
 
-    public void setRate(double rate) {
+    public void setRate(Double rate) {
         this.rate = rate;
     }
 
-    public double getRate() {
+    public Double getRate() {
         return rate;
     }
 
