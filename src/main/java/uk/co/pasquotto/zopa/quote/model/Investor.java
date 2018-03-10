@@ -1,11 +1,16 @@
 package uk.co.pasquotto.zopa.quote.model;
 
+import com.opencsv.bean.CsvBindByName;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Investor implements Serializable {
+    @CsvBindByName(column = "Lender")
     private String name;
+    @CsvBindByName
     private Double rate;
+    @CsvBindByName(column = "Available")
     private int amountAvailable;
 
     public void setName(String name) {
