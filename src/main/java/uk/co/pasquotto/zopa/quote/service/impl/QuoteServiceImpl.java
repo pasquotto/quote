@@ -6,6 +6,7 @@ import uk.co.pasquotto.zopa.quote.model.Investor;
 import uk.co.pasquotto.zopa.quote.model.Quote;
 import uk.co.pasquotto.zopa.quote.reader.CSVFileReader;
 import uk.co.pasquotto.zopa.quote.service.QuoteService;
+import uk.co.pasquotto.zopa.quote.service.exception.NotEnoughFundsException;
 import uk.co.pasquotto.zopa.quote.service.exception.QuotationException;
 import uk.co.pasquotto.zopa.quote.writer.QuoteWriter;
 
@@ -24,6 +25,10 @@ public class QuoteServiceImpl implements QuoteService {
     public void quote(String filePath, int loanAmount) {
         this.validateAmount(loanAmount);
         List<Investor> investors = this.fileReader.read(filePath);
+
+        if (investors.stream().mapToDouble(Investor::getAmountAvailable).sum() < loanAmount) {
+            throw new NotEnoughFundsException();
+        }
 
         Quote quote = new Quote();
         quote.setRequestedAmount(loanAmount);

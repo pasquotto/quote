@@ -9,8 +9,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.co.pasquotto.zopa.quote.model.Investor;
 import uk.co.pasquotto.zopa.quote.model.Quote;
 import uk.co.pasquotto.zopa.quote.reader.CSVFileReader;
-import uk.co.pasquotto.zopa.quote.service.QuoteService;
 import uk.co.pasquotto.zopa.quote.service.exception.MarketFileNotFoundException;
+import uk.co.pasquotto.zopa.quote.service.exception.NotEnoughFundsException;
 import uk.co.pasquotto.zopa.quote.service.exception.QuotationException;
 import uk.co.pasquotto.zopa.quote.service.impl.QuoteServiceImpl;
 import uk.co.pasquotto.zopa.quote.writer.QuoteWriter;
@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QuoteServiceTest {
@@ -106,6 +104,18 @@ public class QuoteServiceTest {
         assertEquals(61.48D, generatedQuote.getMonthlyRepayment(), 0.001D);
         assertEquals(2213.32D, generatedQuote.getTotalRepayment(), 0.001D);
 
+    }
+
+    @Test(expected = NotEnoughFundsException.class)
+    public void testQuoteNotEnoughInvestors() {
+        int loanAmount = 2000;
+        String filePath = "filePath";
+
+        List<Investor> investors = new ArrayList<>();
+        investors.add(createInvestor("investorName1", 0.065, 500));
+        when(fileReader.read(filePath)).thenReturn(investors);
+
+        quote.quote(filePath, loanAmount);
     }
 
     @Test(expected = MarketFileNotFoundException.class)
