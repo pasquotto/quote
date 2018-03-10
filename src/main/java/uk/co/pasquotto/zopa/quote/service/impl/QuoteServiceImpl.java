@@ -32,13 +32,13 @@ public class QuoteServiceImpl implements QuoteService {
     @Value("${loan.term:36}")
     private int term = 36;
 
-    @Value("${loan.maxAllowed:15000")
+    @Value("${loan.maxAllowed:15000}")
     private int loanMaxAllowed = 15000;
 
     @Value("${loan.minAllowed:1000}")
     private int loanMinAllowed = 1000;
 
-    @Value("${loan.increment:100")
+    @Value("${loan.increment:100}")
     private int loanIncrement = 100;
 
     @Override
