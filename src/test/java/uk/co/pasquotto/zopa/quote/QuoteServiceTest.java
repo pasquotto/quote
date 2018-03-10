@@ -12,6 +12,7 @@ import uk.co.pasquotto.zopa.quote.reader.CSVFileReader;
 import uk.co.pasquotto.zopa.quote.service.QuoteService;
 import uk.co.pasquotto.zopa.quote.service.exception.MarketFileNotFoundException;
 import uk.co.pasquotto.zopa.quote.service.exception.QuotationException;
+import uk.co.pasquotto.zopa.quote.service.impl.QuoteServiceImpl;
 import uk.co.pasquotto.zopa.quote.writer.QuoteWriter;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class QuoteServiceTest {
     @Mock
     private QuoteWriter quoteWriter;
     @InjectMocks
-    private QuoteService quote;
+    private QuoteServiceImpl quote;
 
     @Test
     public void testQuoteOneInvestor() {
@@ -39,7 +40,7 @@ public class QuoteServiceTest {
         String filePath = "filePath";
 
         List<Investor> investors = new ArrayList<>();
-        investors.add(createInvestor());
+        investors.add(createInvestor("investorName", 0.075, 1300));
         when(fileReader.read(filePath)).thenReturn(investors);
 
         quote.quote(filePath, loanAmount);
@@ -51,6 +52,59 @@ public class QuoteServiceTest {
         assertEquals(0.075D, generatedQuote.getRate(), 0.001D);
         assertEquals(31.11D, generatedQuote.getMonthlyRepayment(), 0.001D);
         assertEquals(1119.82D, generatedQuote.getTotalRepayment(), 0.001D);
+
+    }
+
+    /**
+     * 500 in 7.5 and 500 in 0.65
+     */
+    @Test
+    public void testQuoteTwoInvestors() {
+        int loanAmount = 1000;
+        String filePath = "filePath";
+
+        List<Investor> investors = new ArrayList<>();
+        investors.add(createInvestor("investorName", 0.075, 1300));
+        investors.add(createInvestor("investorName2", 0.065, 500));
+        when(fileReader.read(filePath)).thenReturn(investors);
+
+        quote.quote(filePath, loanAmount);
+
+        ArgumentCaptor<Quote> arg = ArgumentCaptor.forClass(Quote.class);
+        verify(quoteWriter).write(arg.capture());
+        Quote generatedQuote = arg.getValue();
+        assertEquals(loanAmount, generatedQuote.getRequestedAmount());
+        assertEquals(0.08252D, generatedQuote.getRate(), 0.001D);
+        assertEquals(30.88D, generatedQuote.getMonthlyRepayment(), 0.001D);
+        assertEquals(1111.59D, generatedQuote.getTotalRepayment(), 0.001D);
+
+    }
+
+    /**
+     * 500 in 7.5
+     * 500 in 0.65
+     * 1000 in 0.064
+     */
+    @Test
+    public void testQuoteThreeInvestors() {
+        int loanAmount = 2000;
+        String filePath = "filePath";
+
+        List<Investor> investors = new ArrayList<>();
+        investors.add(createInvestor("investorName", 0.075, 1300));
+        investors.add(createInvestor("investorName2", 0.065, 500));
+        investors.add(createInvestor("investorName3", 0.064, 1000));
+        when(fileReader.read(filePath)).thenReturn(investors);
+
+        quote.quote(filePath, loanAmount);
+
+        ArgumentCaptor<Quote> arg = ArgumentCaptor.forClass(Quote.class);
+        verify(quoteWriter).write(arg.capture());
+        Quote generatedQuote = arg.getValue();
+        assertEquals(loanAmount, generatedQuote.getRequestedAmount());
+        assertEquals(0.067D, generatedQuote.getRate(), 0.001D);
+        assertEquals(61.48D, generatedQuote.getMonthlyRepayment(), 0.001D);
+        assertEquals(2213.32D, generatedQuote.getTotalRepayment(), 0.001D);
 
     }
 
@@ -80,11 +134,11 @@ public class QuoteServiceTest {
         quote.quote("filePath", loanAmount);
     }
 
-    private Investor createInvestor() {
+    private Investor createInvestor(String investorName, double rate, int amountAvailable) {
         Investor investor = new Investor();
-        investor.setName("investorName");
-        investor.setRate(0.075);
-        investor.setAmountAvailable(1300);
+        investor.setName(investorName);
+        investor.setRate(rate);
+        investor.setAmountAvailable(amountAvailable);
         return investor;
     }
 }

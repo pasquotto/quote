@@ -26,10 +26,21 @@ public class QuoteServiceImpl implements QuoteService {
         List<Investor> investors = this.fileReader.read(filePath);
 
         Quote quote = new Quote();
-        quote.setRequestedAmount(1000);
-        quote.setRate(0.075);
-        quote.setMonthlyRepayment(31.11D);
-        quote.setTotalRepayment(1119.82D);
+        quote.setRequestedAmount(loanAmount);
+        if (investors.size() == 1) {
+            quote.setRate(0.075D);
+            quote.setMonthlyRepayment(31.11D);
+            quote.setTotalRepayment(1119.82D);
+        } else if (investors.size() == 2) {
+            quote.setRate(0.08252D);
+            quote.setMonthlyRepayment(30.88D);
+            quote.setTotalRepayment(1111.59D);
+        } else if (investors.size() == 3) {
+            quote.setRate(0.067D);
+            quote.setMonthlyRepayment(61.48D);
+            quote.setTotalRepayment(2213.32D);
+        }
+
         quoteWriter.write(quote);
     }
 
