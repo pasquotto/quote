@@ -26,13 +26,17 @@ public class QuotationRunner implements CommandLineRunner {
 
             quoteService.quote(fileName, loanAmount);
         } catch (NumberFormatException e) {
-            output.print("Loan amount is invalid\n" + usage());
+            output.print(notPossibleToProvideLoanAtThisTime() + "Loan amount is invalid\n" + usage());
         } catch (Exception e) {
-            output.print(e.getMessage() + "\n" + usage());
+            output.print(notPossibleToProvideLoanAtThisTime() + e.getMessage() + "\n" + usage());
         }
     }
 
+    private String notPossibleToProvideLoanAtThisTime() {
+        return "It is not possible to provide a quote at this time.\n";
+    }
+
     private String usage() {
-        return "Use:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}";
+        return "Use:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}\n";
     }
 }

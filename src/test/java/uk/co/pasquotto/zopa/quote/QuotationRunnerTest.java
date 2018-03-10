@@ -39,19 +39,19 @@ public class QuotationRunnerTest {
     @Test
     public void testRunNoParameters() throws Exception{
         underTest.run();
-        verify(output).print("File name and loan amount are needed\nUse:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}");
+        verify(output).print("It is not possible to provide a quote at this time.\nFile name and loan amount are needed\nUse:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}\n");
     }
 
     @Test
     public void testRunLoanAmountInvalid() throws Exception{
         underTest.run("fileName", "derf");
-        verify(output).print("Loan amount is invalid\nUse:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}");
+        verify(output).print("It is not possible to provide a quote at this time.\nLoan amount is invalid\nUse:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}\n");
     }
 
     @Test
     public void testRunLoanAmountNegativeIsInvalid() throws Exception{
         underTest.run("fileName", "-2000");
-        verify(output).print("Loan amount is invalid\nUse:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}");
+        verify(output).print("It is not possible to provide a quote at this time.\nLoan amount is invalid\nUse:\njava -jar quote-0.0.1-SNAPSHOT.jar {fileName} {loanAmount}\n");
     }
 
 }

@@ -15,6 +15,7 @@ import uk.co.pasquotto.zopa.quote.writer.QuoteWriter;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static uk.co.pasquotto.zopa.quote.service.FinancialCalculationUtils.calculateMonthlyRepayments;
@@ -51,7 +52,10 @@ public class QuoteServiceImpl implements QuoteService {
 
         validateFunds(loanAmount, investors);
         // sort investors by lower rate
-        List<Investor> sortedInvestors = investors.stream().sorted(Comparator.comparing(Investor::getRate)).collect(Collectors.toList());
+        Predicate<Investor> filterInvalidInvestors = investor -> investor.getRate() != null &&
+                investor.getName() != null;
+        List<Investor> sortedInvestors = investors.stream().filter(filterInvalidInvestors)
+                .sorted(Comparator.comparing(Investor::getRate)).collect(Collectors.toList());
 
         // define the parts that the investors can lend on their different rates
         List<LoanPart> loanParts = createLoanPartsFromInvestor(loanAmount, sortedInvestors);
@@ -91,6 +95,7 @@ public class QuoteServiceImpl implements QuoteService {
                 investor.setAmountAvailable(0);
             }
             loanParts.add(new LoanPart(investor.getRate(), loanPartAmount, this.term));
+            if(remainderOfLoan == 0) break;
         }
         return loanParts;
     }
@@ -113,7 +118,7 @@ public class QuoteServiceImpl implements QuoteService {
 
     private void validateFunds(int loanAmount, List<Investor> investors) {
         if (investors.stream().mapToDouble(Investor::getAmountAvailable).sum() < loanAmount) {
-            throw new NotEnoughFundsException();
+            throw new NotEnoughFundsException("Not enough fund for this quote");
         }
     }
 
