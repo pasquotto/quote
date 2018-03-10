@@ -1,6 +1,9 @@
 package uk.co.pasquotto.zopa.quote.model;
 
-public class Investor {
+import java.io.Serializable;
+import java.util.Objects;
+
+public class Investor implements Serializable {
     private String name;
     private Double rate;
     private int amountAvailable;
@@ -27,5 +30,29 @@ public class Investor {
 
     public int getAmountAvailable() {
         return amountAvailable;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Investor investor = (Investor) o;
+        return amountAvailable == investor.amountAvailable &&
+                Objects.equals(name, investor.name) &&
+                Objects.equals(rate, investor.rate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, rate, amountAvailable);
+    }
+
+    @Override
+    public String toString() {
+        return "Investor{" +
+                "name='" + name + '\'' +
+                ", rate=" + rate +
+                ", amountAvailable=" + amountAvailable +
+                '}';
     }
 }

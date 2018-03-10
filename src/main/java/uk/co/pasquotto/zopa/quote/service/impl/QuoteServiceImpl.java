@@ -42,8 +42,8 @@ public class QuoteServiceImpl implements QuoteService {
 
         Quote quote = loanParts.stream().map(this::generateQuoteFromLoanPart)
                 // sum up all quotes on the different rates
-                .reduce(new Quote(0D, 0D, 0D),
-                        (q1, q2) -> new Quote(0D, q1.getMonthlyRepayment() + q2.getMonthlyRepayment(),
+                .reduce(new Quote(0D, 0D),
+                        (q1, q2) -> new Quote(q1.getMonthlyRepayment() + q2.getMonthlyRepayment(),
                                 q1.getTotalRepayment() + q2.getTotalRepayment()));
 
         calculateRate(quote, loanAmount);

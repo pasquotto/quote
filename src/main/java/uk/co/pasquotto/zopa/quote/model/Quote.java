@@ -1,21 +1,24 @@
 package uk.co.pasquotto.zopa.quote.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Quote {
+public class Quote implements Serializable {
     private int requestedAmount;
     private Double rate;
     private Double monthlyRepayment;
     private Double totalRepayment;
 
-    public Quote(double rate, double monthlyRepayment, double totalRepayment) {
-        this.rate = rate;
+    public Quote(double monthlyRepayment, double totalRepayment) {
+        this.rate = 0D;
         this.monthlyRepayment = monthlyRepayment;
         this.totalRepayment = totalRepayment;
     }
 
     public Quote() {
-
+        this.rate = 0D;
+        this.monthlyRepayment = 0D;
+        this.totalRepayment = 0D;
     }
 
     public int getRequestedAmount() {
@@ -63,7 +66,16 @@ public class Quote {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(requestedAmount, rate, monthlyRepayment, totalRepayment);
+    }
+
+    @Override
+    public String toString() {
+        return "Quote{" +
+                "requestedAmount=" + requestedAmount +
+                ", rate=" + rate +
+                ", monthlyRepayment=" + monthlyRepayment +
+                ", totalRepayment=" + totalRepayment +
+                '}';
     }
 }
