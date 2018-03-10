@@ -33,9 +33,34 @@ public class QuoteServiceImpl implements QuoteService {
         validateFunds(loanAmount, investors);
         // sort investors by lower rate
         List<Investor> sortedInvestors = investors.stream().sorted(Comparator.comparing(Investor::getRate)).collect(Collectors.toList());
+
+        // define the parts that the investors can lend on their different rates
+        List<LoanPart> loanParts = createLoanPartsFromInvestor(loanAmount, sortedInvestors);
+
+        Quote quote = loanParts.stream().map(this::generateQuoteFromLoanPart)
+                // sum up all quotes on the different rates
+                .reduce(new Quote(0D, 0D, 0D),
+                        (q1, q2) -> new Quote(0D, q1.getMonthlyRepayment() + q2.getMonthlyRepayment(),
+                                q1.getTotalRepayment() + q2.getTotalRepayment()));
+
+        calculateRate(quote, loanAmount);
+
+        quote.setRequestedAmount(loanAmount);
+
+        quoteWriter.write(quote);
+    }
+
+    /**
+     * Create a loan part for each investor. if the first investor have enough money then just one LoanPart will be created,
+     * otherwise it will iterate to the next investor until there is enough money to fund the loan
+     * @param loanAmount the amount to be lent
+     * @param investors list of investors
+     * @return a list of loan parts with amounts and rates
+     */
+    private List<LoanPart> createLoanPartsFromInvestor(int loanAmount, List<Investor> investors) {
         List<LoanPart> loanParts = new LinkedList<>();
         int remainderOfLoan = loanAmount;
-        for(Investor investor : sortedInvestors) {
+        for(Investor investor : investors) {
             int loanPartAmount = 0;
             if (investor.getAmountAvailable() > remainderOfLoan) {
                 loanPartAmount = remainderOfLoan;
@@ -48,34 +73,7 @@ public class QuoteServiceImpl implements QuoteService {
             }
             loanParts.add(new LoanPart(investor.getRate(), loanPartAmount, 36));
         }
-
-        Quote quoteFirstStep = loanParts.stream().map(this::generateQuoteFromLoanPart)
-                // sum up all quotes on the different rates
-                .reduce(new Quote(0D, 0D, 0D),
-                        (q1, q2) -> new Quote(0D, q1.getMonthlyRepayment() + q2.getMonthlyRepayment(),
-                                q1.getTotalRepayment() + q2.getTotalRepayment()));
-        // while there is still funds
-        //      select next investor by available amount
-        //      drain funds from investor
-        //      get rate from investor and reserve
-        //      if the investor has more funds than the remainder of the loan, then remove just the amount needed
-
-        calculateRate(quoteFirstStep, loanAmount);
-
-        Quote quote = new Quote();
-        quote.setRequestedAmount(loanAmount);
-        if (investors.size() == 1) {
-            quote = quoteFirstStep;
-        } else if (investors.size() == 2) {
-            quote = quoteFirstStep;
-        } else if (investors.size() == 3) {
-            quote.setRate(0.067D);
-            quote.setMonthlyRepayment(61.48D);
-            quote.setTotalRepayment(2213.32D);
-        }
-        quote.setRequestedAmount(loanAmount);
-
-        quoteWriter.write(quote);
+        return loanParts;
     }
 
     private void calculateRate(Quote quote, int loanValue) {
