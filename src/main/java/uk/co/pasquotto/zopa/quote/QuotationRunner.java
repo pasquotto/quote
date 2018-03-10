@@ -1,6 +1,5 @@
 package uk.co.pasquotto.zopa.quote;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Controller;
 import uk.co.pasquotto.zopa.quote.service.QuoteService;
@@ -9,10 +8,14 @@ import uk.co.pasquotto.zopa.quote.writer.Output;
 @Controller
 public class QuotationRunner implements CommandLineRunner {
 
-    @Autowired
     private Output output;
-    @Autowired
+
     private QuoteService quoteService;
+
+    public QuotationRunner(QuoteService quoteService, Output output) {
+        this.quoteService = quoteService;
+        this.output = output;
+    }
 
     @Override
     public void run(String... args) throws Exception {

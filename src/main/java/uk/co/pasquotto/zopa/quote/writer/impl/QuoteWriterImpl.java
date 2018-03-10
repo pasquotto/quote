@@ -1,6 +1,5 @@
 package uk.co.pasquotto.zopa.quote.writer.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.co.pasquotto.zopa.quote.model.Quote;
 import uk.co.pasquotto.zopa.quote.service.exception.QuotationException;
@@ -12,8 +11,13 @@ import java.util.Locale;
 
 @Component
 public class QuoteWriterImpl implements QuoteWriter {
-    @Autowired
+
     private Output output;
+
+    public QuoteWriterImpl(Output output) {
+        this.output = output;
+    }
+
     @Override
     public void write(Quote quote) {
         validate(quote);

@@ -1,6 +1,6 @@
 package uk.co.pasquotto.zopa.quote.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.co.pasquotto.zopa.quote.model.Investor;
@@ -23,10 +23,8 @@ import static uk.co.pasquotto.zopa.quote.service.FinancialCalculationUtils.rate;
 @Service
 public class QuoteServiceImpl implements QuoteService {
 
-    @Autowired
     private CSVFileReader fileReader;
 
-    @Autowired
     private QuoteWriter quoteWriter;
 
     @Value("${loan.term:36}")
@@ -40,6 +38,11 @@ public class QuoteServiceImpl implements QuoteService {
 
     @Value("${loan.increment:100}")
     private int loanIncrement = 100;
+
+    public QuoteServiceImpl(CSVFileReader fileReader, QuoteWriter quoteWriter) {
+        this.fileReader = fileReader;
+        this.quoteWriter = quoteWriter;
+    }
 
     @Override
     public void quote(String filePath, int loanAmount) {
